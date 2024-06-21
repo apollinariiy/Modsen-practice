@@ -4,7 +4,10 @@ const MeetupDto = require('../dtos/meetupDTO');
 class meetupController {
     async getMeetups(req, res, next) {
         try {
-            const meetups = await meetupService.getMeetups();
+            let { search, filter, sortByName, size, page} = req.query;
+            let filterArr = [];
+            if (filter) { filterArr = filter.split(',') }
+            const meetups = await meetupService.getMeetups(search, filterArr, sortByName, size, page);
             return res.json(meetups);
         } catch (e) {
             next(e)

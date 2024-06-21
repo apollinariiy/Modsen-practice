@@ -2,10 +2,23 @@ const prisma = require('../models/prisma')
 const ApiError = require('../models/error');
 
 class MeetupService {
-    async getMeetups() {
-        const meetups = await prisma.meetups.findMany();
+    async getMeetups(search, filter, order, size, page) {
+        const meetups = await prisma.meetups.findMany({
+            where: {
+                title: {
+                    contains: search
+                },
+                tags: filter.length > 0 ? { hasSome: filter } : undefined
+            },
+            orderBy: {
+                title: order == 'asc' || order == 'desc' ? order : undefined
+            },
+            skip: size ? parseInt(page-1)*parseInt(page) : undefined,
+            take: size ? parseInt(size) : undefined
+        });
         return meetups;
     }
+    
     async getMeetupByID(meetupID) {
         if (!Number.isInteger(Number(meetupID))) throw ApiError.BadRequest('ID must be an integer');
         const meetup = await prisma.meetups.findFirst({
