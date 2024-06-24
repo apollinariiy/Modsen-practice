@@ -19,6 +19,8 @@ model Users {
   password     String
   role         String
   tokens       Tokens[]
+  meetups      Meetups[]
+  participants       Participants[]
 }
 
 model Tokens {
@@ -35,5 +37,16 @@ model Meetups {
   tags        String[]
   date        DateTime
   location    String
+  user          Users   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        Int
+  participants       Participants[]
+}
+
+model Participants {
+  id       Int      @id @default(autoincrement())
+  user     Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   Int
+  meetup   Meetups  @relation(fields: [meetupId], references: [id], onDelete: Cascade)
+  meetupId Int
 }
 
