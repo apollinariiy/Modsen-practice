@@ -13,8 +13,8 @@ class MeetupService {
             orderBy: {
                 title: order == 'asc' || order == 'desc' ? order : undefined
             },
-            skip: size ? parseInt(page-1)*parseInt(page) : undefined,
-            take: size ? parseInt(size) : undefined
+            skip: page && size  ? parseInt(page-1)*parseInt(size) : undefined,
+            take: page && size ? parseInt(size) : undefined
         });
         return meetups;
     }
@@ -29,14 +29,15 @@ class MeetupService {
         if (meetup == null) throw ApiError.NotFound();
         return meetup;
     }
-    async createMeetup(meetupDTO) {
+    async createMeetup(userID, meetupDTO) {
         const createdMeetup = await prisma.meetups.create({
             data: {
                 title: meetupDTO.title,
                 description: meetupDTO.description,
                 tags: meetupDTO.tags,
                 date: new Date(meetupDTO.date),
-                location: meetupDTO.location
+                location: meetupDTO.location,
+                userId: parseInt(userID)
             }
         });
         return createdMeetup;

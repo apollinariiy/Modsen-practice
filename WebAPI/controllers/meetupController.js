@@ -1,7 +1,7 @@
 const meetupService = require('../services/meetupService');
 const MeetupDto = require('../dtos/meetupDTO');
 
-class meetupController {
+class MeetupController {
     async getMeetups(req, res, next) {
         try {
             let { search, filter, sortByName, size, page} = req.query;
@@ -27,8 +27,9 @@ class meetupController {
     async createMeetup(req, res, next) {
         try {
             const meetupDto = new MeetupDto(req.body);
-            const createdMeetup = await meetupService.createMeetup(meetupDto);
-            return res.json(createdMeetup);
+            const userID = req.user.id;
+            const createdMeetup = await meetupService.createMeetup(userID, meetupDto);
+            return res.status(201).json(createdMeetup);
         } catch (e) {
             next(e)
         }
@@ -56,4 +57,4 @@ class meetupController {
     }
 }
 
-module.exports = new meetupController()
+module.exports = new MeetupController()
