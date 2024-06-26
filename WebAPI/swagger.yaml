@@ -1,0 +1,323 @@
+openapi: 3.0.0
+info:
+  title: Meetup API
+  version: 1.0.0
+  description: REST API for meetups
+
+
+
+paths:
+  /auth/signup:
+    post:
+      summary: Register a new user
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                login:
+                  type: string
+                  example: user@example.com
+                password:
+                  type: string
+                  example: password123
+      responses:
+        200:
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  refreshToken:
+                    type: string
+                  accessToken:
+                    type: string
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      login:
+                        type: string
+                      role:
+                        type: string
+  /auth/signin:
+    post:
+      summary: Sign in an existing user
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                login:
+                  type: string
+                  example: user@example.com
+                password:
+                  type: string
+                  example: password123
+      responses:
+        200:
+          description: User signed in successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  refreshToken:
+                    type: string
+                  accessToken:
+                    type: string
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      login:
+                        type: string
+                      role:
+                        type: string
+
+
+  /auth/signout:
+    post:
+      summary: Sign out the current user
+      tags:
+        - Authentication
+      responses:
+        200:
+          description: User signed out successfully
+
+  /auth/refresh:
+    get:
+      summary: Refresh the access token
+      tags:
+        - Authentication
+      security:
+        - tokenAuth: []
+      responses:
+        200:
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  refreshToken:
+                    type: string
+                  accessToken:
+                    type: string
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      login:
+                        type: string
+                      role:
+                        type: string
+
+  /meetups:
+    get:
+      summary: Get all meetups
+      tags:
+        - Meetups
+      security:
+        - tokenAuth: []  
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Search by name or description
+        - in: query
+          name: filter
+          schema:
+            type: string
+          description: Сomma-separated list of filters
+        - in: query
+          name: sortByName
+          schema:
+            type: string
+            enum: [asc, desc]
+          description: Sort direction by name
+        - in: query
+          name: size
+          schema:
+            type: integer
+            minimum: 1
+          description: Number of items per page
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+          description: Page number 
+      responses:
+        '200':
+          description: A list of meetups
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Meetup'
+
+    post:
+      summary: Create a new meetup
+      tags:
+        - Meetups
+      security:
+        - tokenAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Meetup'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Meetup'
+
+  /meetups/{meetupID}:
+    get:
+      summary: Get a meetup by ID
+      tags:
+        - Meetups
+      security:
+        - tokenAuth: []
+      parameters:
+        - in: path
+          name: meetupID
+          required: true
+          schema:
+            type: integer
+          description: ID of the meetup to get
+      responses:
+        '200':
+          description: A single meetup object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Meetup'
+        '404':
+          description: Meetup not found
+
+    put:
+      summary: Update a meetup by ID
+      tags:
+        - Meetups
+      security:
+        - tokenAuth: []
+      parameters:
+        - in: path
+          name: meetupID
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Meetup'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Meetup'
+
+    delete:
+      summary: Delete a meetup by ID
+      tags:
+        - Meetups
+      security:
+        - tokenAuth: []
+      parameters:
+        - in: path
+          name: meetupID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Meetup'
+  /participants:
+   post:
+      summary: Create a new participants
+      tags:
+        - Participants
+      security:
+        - tokenAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                meetupID:
+                  type: integer
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: 
+                    type: integer
+                  userId:
+                    type: integer
+                  meetupId:
+                    type: integer
+
+components:
+  securitySchemes:
+    tokenAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      
+  schemas:
+    Meetup:
+      type: object
+      required:
+        - id
+        - title
+        - description
+        - tags
+        - date
+        - location
+      properties:
+        id: 
+          type: integer
+          readOnly: true
+        title:
+          type: string
+        description:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        date:
+          type: string
+          format: date-time
+        location:
+          type: string
