@@ -18,4 +18,8 @@ module.exports = class ApiError extends Error {
     static NotFound() {
         return new ApiError(404, 'NotFound')
     }
+
+    static Forbidden() {
+        return new ApiError(403, 'Insufficient role')
+    }
 }

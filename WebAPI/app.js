@@ -17,7 +17,7 @@ const app = express();
 app.use(bodyParser.json());
 app.use(cookieParser());
 
-app.use(errorMiddleware);
+
 const swaggerDoc = YAML.load('./swagger.yaml');
 app.use('/api', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
 
@@ -25,7 +25,7 @@ app.use('/auth', authRouter);
 app.use('/meetups', meetupRouter);
 app.use('/participants', participantRouter);
 
-
+app.use(errorMiddleware);
 
 
 app.listen(3000, () => console.log(`App listening on port ${3000}`))
