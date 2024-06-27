@@ -7,7 +7,14 @@ class MeetupDto {
             title: Joi.string().trim().max(255).required(),
             description: Joi.string().trim().required(),
             tags: Joi.array().items(Joi.string().trim()).min(1).required(),
-            date: Joi.date().iso().required(),
+            date: Joi.date().iso().required().custom((value, helpers) => {
+                const now = new Date();
+                now.setHours(now.getHours() + 3);
+                if (value <= now) {
+                    return helpers.message('Date must be in the future');
+                }
+                return value;
+            }),
             location: Joi.string().trim().required()
         });
         const { error, value } = schema.validate(model);

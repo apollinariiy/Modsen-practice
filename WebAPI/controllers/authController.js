@@ -5,8 +5,7 @@ const passport = require('passport');
 class AuthController {
     async signup(req, res, next) {
         try {
-            const data = req.body;
-            const singUserDto = new SingUserDto(data);
+            const singUserDto = new SingUserDto(req.body);
             const userData = await AuthService.signup(singUserDto)
             res.cookie('refreshToken', userData.refreshToken, { maxAge: 1000 * 60 * 60 * 24, httpOnly: true })
             return res.json(userData)

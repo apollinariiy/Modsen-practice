@@ -7,10 +7,9 @@ const errorMiddleware = require('./middleware/errorMiddleware');
 const participantRouter = require('./routes/participantRoute');
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
-const swaggerJsdoc = require('swagger-jsdoc');
 var cookieParser = require('cookie-parser');
+const deleteOldNotes = require('./middleware/deleteOldNotes');
 require('./services/passportService');
-const passport = require('passport');
 const app = express();
 
 
@@ -20,12 +19,12 @@ app.use(cookieParser());
 
 const swaggerDoc = YAML.load('./swagger.yaml');
 app.use('/api', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
-
+app.use(deleteOldNotes);
 app.use('/auth', authRouter);
 app.use('/meetups', meetupRouter);
 app.use('/participants', participantRouter);
-
 app.use(errorMiddleware);
 
 
-app.listen(3000, () => console.log(`App listening on port ${3000}`))
+
+app.listen(3000)

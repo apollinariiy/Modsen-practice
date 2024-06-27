@@ -30,6 +30,13 @@ class MeetupService {
         return meetup;
     }
     async createMeetup(userID, meetupDTO) {
+        const meetup = await prisma.meetups.findFirst({
+            where: {
+                date: new Date(meetupDTO.date),
+                location: meetupDTO.location
+            }
+        });
+        if (meetup != null) throw ApiError.BadRequest('The location is already taken');
         const createdMeetup = await prisma.meetups.create({
             data: {
                 title: meetupDTO.title,
@@ -60,7 +67,7 @@ class MeetupService {
     }
     async deleteMeetup(meetupID) {
         await this.getMeetupByID(meetupID);
-        const deletedMeetup = prisma.meetups.delete({
+        const deletedMeetup = await prisma.meetups.delete({
             where: {
                 id: parseInt(meetupID)
             }
