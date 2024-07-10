@@ -1,12 +1,11 @@
 import { Strategy } from 'passport-local';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { PrismaService } from '../../prisma.service';
-import * as bcrypt from 'bcrypt';
+import { AuthService } from '../auth.service';
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) {
-  constructor(private prisma: PrismaService) {
+  constructor(private authService: AuthService) {
     super({
         usernameField: 'login',
         passwordField: 'password'
@@ -14,14 +13,8 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(login: string, password: string): Promise<any> {
-
-    const user = await this.prisma.users.findFirst({where:{
-        login: login
-    }});
-
-    if (!user) throw new UnauthorizedException('Incorrect login');
-    if(!await bcrypt.compare(password, user.password)) throw new UnauthorizedException('Incorrect password'); 
-    
+    const user = await this.authService.validateUser({login, password})
+    if (!user) throw new UnauthorizedException('Incorrect login or password');
     return user;
   }
 }

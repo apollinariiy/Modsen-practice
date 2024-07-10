@@ -2,13 +2,18 @@ import { Controller, Request, Post, UseGuards, Get, Res, Body } from '@nestjs/co
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { Response } from 'express';
+import { UserDto } from './dto/user.dto';
+import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { RefreshJwtAuthGuard } from './guards/refresh.guard';
 
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
     constructor(private authService: AuthService) { }
 
     @UseGuards(AuthGuard('local'))
     @Post('signin')
+    @ApiBody({type: UserDto})
     async signin(@Request() req, @Res() res: Response) {
         const { accessToken, refreshToken } = await this.authService.signin(req.user);
         res.cookie('refreshToken', refreshToken, { maxAge: 1000 * 60 * 60 * 24, httpOnly: true })
@@ -16,19 +21,19 @@ export class AuthController {
     }
 
     @Post('signup')
-    async signup(@Body() body, @Res() res: Response) {
-        const { login, password } = body;
-        const { accessToken, refreshToken } = await this.authService.signup(login, password);
+    async signup(@Body() userDto: UserDto, @Res() res: Response) {
+        const { accessToken, refreshToken } = await this.authService.signup(userDto);
         res.cookie('refreshToken', refreshToken, { maxAge: 1000 * 60 * 60 * 24, httpOnly: true })
         res.json({ accessToken });
     }
 
-    
-    @UseGuards(AuthGuard('jwt-refresh'))
+
+    @UseGuards(RefreshJwtAuthGuard)
     @Get('refresh')
-    async getProfile(@Request() req, @Res() res: Response) {
+    async refresh(@Request() req, @Res() res: Response) {
         const { accessToken, refreshToken } = await this.authService.refresh(req.user);
         res.cookie('refreshToken', refreshToken, { maxAge: 1000 * 60 * 60 * 24, httpOnly: true })
         res.json({ accessToken });
     }
+
 }

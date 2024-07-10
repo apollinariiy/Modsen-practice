@@ -3,10 +3,11 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { Request } from 'express'
 import { PrismaService } from 'src/prisma.service';
+import { AuthService } from '../auth.service';
 
 @Injectable()
 export class RefreshJwtStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
-    constructor(private prisma: PrismaService) {
+    constructor(private authService: AuthService) {
         super({
             jwtFromRequest: ExtractJwt.fromExtractors([
                 (req: Request) => {
@@ -14,18 +15,12 @@ export class RefreshJwtStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
                 }
             ]),
             ignoreExpiration: false,
-            secretOrKey: process.env.access_secret,
+            secretOrKey: process.env.refresh_secret,
         });
     }
 
     async validate(payload: any) {
-        const refreshToken = payload.refreshToken;
-        console.log(refreshToken);
-        const tokenFromDB = await this.prisma.tokens.findFirst({
-            where: {
-                refreshToken: refreshToken
-            }
-        });
+        const tokenFromDB = await this.authService.findRefreshToken(payload.refreshToken)
         if (!tokenFromDB) {
             throw new UnauthorizedException('Incorrect refresh token')
         }

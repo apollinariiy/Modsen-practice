@@ -7,15 +7,14 @@ import { PrismaService } from 'src/prisma.service';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { RefreshJwtStrategy } from './strategies/jwt-refresh.strategy';
+import { JwtAuthGuard } from './guards/jwt.guard';
+import { RolesGuard } from './guards/roles.guard';
 
 @Module({
   imports: [PassportModule,
-    JwtModule.register({
-      secret: process.env.access_secret,
-      signOptions: { expiresIn: '1h' },
-    })
+    JwtModule.register({})
   ],
-  providers: [AuthService, LocalStrategy, JwtStrategy, PrismaService, RefreshJwtStrategy],
+  providers: [AuthService, LocalStrategy, JwtStrategy, PrismaService, RefreshJwtStrategy, JwtAuthGuard, RolesGuard],
   controllers: [AuthController]
 })
 export class AuthModule { }
